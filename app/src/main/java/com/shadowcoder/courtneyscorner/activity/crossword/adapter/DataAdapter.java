@@ -10,6 +10,11 @@ import com.shadowcoder.courtneyscorner.data.Direction;
 import com.shadowcoder.courtneyscorner.data.MutableCoordinate;
 import com.shadowcoder.courtneyscorner.data.WordData;
 
+/**
+ * An adapter to manage the user's state.  This is the bread and butter of the usability
+ * of the crossword actions.  This links together the {@link Focus} actions to user's
+ * actions
+ */
 public class DataAdapter {
 
     @NonNull
@@ -27,6 +32,11 @@ public class DataAdapter {
      * CONSTRUCTOR METHODS
      */
 
+    /**
+     * Adapter used to link the user's action to the input {@link Focus}
+     *
+     * @param focus the {@link Focus} to use to highlight the input focus
+     */
     public DataAdapter(Focus focus) {
         this.focus = focus;
     }
@@ -35,6 +45,11 @@ public class DataAdapter {
      * GETTER/SETTER METHODS
      */
 
+    /**
+     * Setter for the {@link CrosswordData} to manipulate.  The {@link Focus} is set
+     *
+     * @param data the {@link CrosswordData} to use
+     */
     public void setCrosswordData(@Nullable CrosswordData data) {
         this.reset();
         this.crosswordData = data;
@@ -47,6 +62,11 @@ public class DataAdapter {
         this.set(current);
     }
 
+    /**
+     * Getter for the current {@link WordData} in the input focus
+     *
+     * @return the current {@link WordData}
+     */
     @Nullable
     @SuppressWarnings("WeakerAccess")
     public WordData getCurrentWord() {
@@ -58,6 +78,11 @@ public class DataAdapter {
         return result.data;
     }
 
+    /**
+     * Getter for the current {@link Direction} of the input focus
+     *
+     * @return the current {@link Direction}
+     */
     @NonNull
     @SuppressWarnings("unused")
     Direction getDirection() {
@@ -70,6 +95,11 @@ public class DataAdapter {
 
     // header control methods
 
+    /**
+     * Move the input focus to the previous {@link WordData}.  This is dependent on the current {@link Direction}
+     *
+     * @return The previous {@link WordData} or null if none are found.
+     */
     @Nullable
     public WordData previous() {
         if (this.crosswordData == null) {
@@ -96,6 +126,9 @@ public class DataAdapter {
         return result.data;
     }
 
+    /**
+     * Flip the input focus from {@link Direction#HORIZONTAL} or {@link Direction#VERTICAL}
+     */
     public void flipDirection() {
         this.direction = this.direction.flip();
 
@@ -108,6 +141,11 @@ public class DataAdapter {
         this.set(result);
     }
 
+    /**
+     * Move the input focus to the next {@link WordData}.  This is dependent on the current {@link Direction}
+     *
+     * @return The next {@link WordData} or null if none are found.
+     */
     @Nullable
     public WordData next() {
         if (this.crosswordData == null) {
@@ -134,6 +172,11 @@ public class DataAdapter {
         return result.data;
     }
 
+    /**
+     * Move the input focus to a specified {@link Coordinate}
+     *
+     * @param coordinate the new {@link Coordinate} to use
+     */
     public void move(@NonNull Coordinate coordinate) {
         if (this.crosswordData == null) {
             return;
@@ -152,6 +195,11 @@ public class DataAdapter {
 
     // text entry methods
 
+    /**
+     * Adds a new letter to the current {@link WordData}.  If the add action is taken on the last
+     * element, the next {@link WordData} is found and made the focus.
+     * @param text the new {@link String} to add
+     */
     public void add(@NonNull String text) {
         if (this.crosswordData == null) {
             return;
@@ -169,6 +217,10 @@ public class DataAdapter {
         this.set(data);
     }
 
+    /**
+     * Deletes the last item from a {@link WordData}.  If the delete action is taken on the first
+     * element, the previous {@link WordData} is found and made the focus.
+     */
     public void delete() {
         if (this.crosswordData == null) {
             return;
@@ -193,6 +245,12 @@ public class DataAdapter {
      * PRIVATE METHODS
      */
 
+    /**
+     * Set the {@link #coordinate} and {@link #wordIndex} variables while updating the
+     * {@link Focus}.
+     *
+     * @param data the result of a {@link CrosswordData.DataCache} lookup
+     */
     private void set(@Nullable WordData data) {
         if (data == null || this.crosswordData == null) {
             return;
@@ -210,6 +268,12 @@ public class DataAdapter {
         this.wordIndex = result.index;
     }
 
+    /**
+     * Set the {@link #coordinate} and {@link #wordIndex} variables while updating the
+     * {@link Focus}.
+     *
+     * @param result a {@link CrosswordData.CacheResult} from a {@link CrosswordData.DataCache} lookup
+     */
     private boolean set(@NonNull CrosswordData.CacheResult result) {
         if (result.data == null) {
             return false;
@@ -220,6 +284,15 @@ public class DataAdapter {
         return true;
     }
 
+    /**
+     * Set the {@link #coordinate} and {@link #wordIndex} variables while updating the
+     * {@link Focus}.
+     *
+     * This lets you also set an optional index offset if the current {@link WordData} is completed
+     *
+     * @param result a {@link CrosswordData.CacheResult} from a {@link CrosswordData.DataCache} lookup
+     * @param offset an offset to use if the current {@link WordData} has been completed
+     */
     private void set(@NonNull CrosswordData.CacheResult result, int offset) {
         if (result.data == null) {
             return;
@@ -249,6 +322,13 @@ public class DataAdapter {
         }
     }
 
+    /**
+     * Finds the next available empty space in a {@link WordData}.  If none are found, the current
+     * index is used.
+     *
+     * @param data the {@link WordData} used
+     * @return the {@link Coordinate} of the new focus
+     */
     @NonNull
     private Coordinate findFocus(@NonNull WordData data) {
         int x, y;

@@ -16,6 +16,9 @@ import com.shadowcoder.courtneyscorner.activity.crossword.view.CrosswordItemView
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * An adapter to manage the view creation for a crossword.
+ */
 public class CrosswordAdapter extends BaseAdapter {
 
     public interface OnItemClickListener {
@@ -34,6 +37,14 @@ public class CrosswordAdapter extends BaseAdapter {
         this.viewLookup = viewLookup;
     }
 
+    /**
+     * Setter for the {@link CrosswordData}.  This clears the previous view state.
+     *
+     * For the purpose of this adapter, the {@link ItemData} is flattened out to make for easier
+     * view creation.
+     *
+     * @param data the {@link CrosswordData} to display
+     */
     public void setCrosswordData(@Nullable CrosswordData data) {
         this.unregisterViews();
         this.views.clear();
@@ -81,6 +92,9 @@ public class CrosswordAdapter extends BaseAdapter {
         this.externalItemClickListener = listener;
     }
 
+    /**
+     * Register the adapter views with the {@link EventBus} and the {@link ViewLookup}
+     */
     public void registerViews() {
         for (int i = 0; i < this.views.size(); i++) {
             CrosswordItemView view = this.views.get(i);
@@ -89,6 +103,9 @@ public class CrosswordAdapter extends BaseAdapter {
         }
     }
 
+    /**
+     * Unregister the adapter views with the {@link EventBus} and the {@link ViewLookup}
+     */
     public void unregisterViews() {
         for (CrosswordItemView view: this.views) {
             EventBus.getSingleton().unregister(view);

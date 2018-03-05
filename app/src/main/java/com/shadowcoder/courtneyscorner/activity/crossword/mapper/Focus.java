@@ -12,6 +12,9 @@ import com.shadowcoder.courtneyscorner.data.WordData;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Controller class to reflect the current input focus with the onscreen components
+ */
 public class Focus {
 
     private static final String TAG = Focus.class.getSimpleName();
@@ -35,6 +38,10 @@ public class Focus {
      * PUBLIC METHODS
      */
 
+    /**
+     * Resets the focus.  This clears the cached coordinates associated with a {@link WordData} and
+     * the coordinate of the caret on screen
+     */
     public void reset() {
         for (Coordinate coordinate : this.coordinates) {
             try {
@@ -51,6 +58,12 @@ public class Focus {
         this.focus.reset();
     }
 
+    /**
+     * Sets the highlighted state of the active {@link WordData} and the caret
+     *
+     * @param data the active {@link WordData}
+     * @param focus the {@link Coordinate} of the caret
+     */
     public void set(@NonNull WordData data, @NonNull Coordinate focus) {
         this.reset();
 
@@ -77,10 +90,16 @@ public class Focus {
         }
     }
 
+    /**
+     * Locks the focus during screen invalidation cycles
+     */
     public void lock() {
         this.locked = true;
     }
 
+    /**
+     * Unlocks the focus after the screen invalidation cycles and syncs any coordinates set while locked
+     */
     public void unlock() {
         this.locked = false;
         this.update();
