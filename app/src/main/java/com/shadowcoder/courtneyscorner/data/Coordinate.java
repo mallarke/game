@@ -3,12 +3,17 @@ package com.shadowcoder.courtneyscorner.data;
 import android.support.annotation.NonNull;
 import android.view.MotionEvent;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Coordinate {
 
+    @SerializedName("x")
     public final int x;
+
+    @SerializedName("y")
     public final int y;
 
     @SuppressWarnings({"unused", "WeakerAccess"})
@@ -79,6 +84,7 @@ public class Coordinate {
         return this.equals(object);
     }
 
+    @SuppressWarnings("WeakerAccess")
     public List<Coordinate> inflateTo(@NonNull Coordinate other, @NonNull Direction direction) {
         List<Coordinate> items = new ArrayList<>();
 

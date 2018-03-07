@@ -12,12 +12,31 @@
 
     tools:context="com.shadowcoder.courtneyscorner.activity.MainActivity">
 
-    <Button
-        android:id="@+id/main_button"
-
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
+        android:layout_centerInParent="true">
 
-        android:text="Bob" />
+        <Button
+            android:id="@+id/generator_button"
+
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:layout_marginEnd="6dp"
+
+            android:text="Generator" />
+
+        <Button
+            android:id="@+id/crossword_button"
+
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:layout_marginStart="6dp"
+
+            android:text="Crossword" />
+    </LinearLayout>
 </RelativeLayout>

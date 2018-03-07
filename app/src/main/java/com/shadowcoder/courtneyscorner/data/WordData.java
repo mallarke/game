@@ -3,6 +3,9 @@ package com.shadowcoder.courtneyscorner.data;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.shadowcoder.courtneyscorner.lookup.LookupType;
+import com.shadowcoder.courtneyscorner.lookup.ViewLookup;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,26 +18,23 @@ public class WordData {
 
     private final @NonNull ArrayList<ItemData> data;
 
-    private ViewLookup viewLookup;
-
     private int textIndex = 0;
 
-    public static @NonNull WordData horizontalData(@NonNull String word, @NonNull Coordinate startPosition, @NonNull ViewLookup viewLookup) {
+    public static @NonNull WordData horizontalData(@NonNull String word, @NonNull Coordinate startPosition) {
         Coordinate endPosition = new Coordinate((startPosition.x + word.length() - 1), startPosition.y);
-        return new WordData(word, startPosition, endPosition, Direction.HORIZONTAL, viewLookup);
+        return new WordData(word, startPosition, endPosition, Direction.HORIZONTAL);
     }
 
-    public static @NonNull WordData verticalData(@NonNull String word, @NonNull Coordinate startPosition, @NonNull ViewLookup viewLookup) {
+    public static @NonNull WordData verticalData(@NonNull String word, @NonNull Coordinate startPosition) {
         Coordinate endPosition = new Coordinate(startPosition.x, startPosition.y + (word.length() - 1));
-        return new WordData(word, startPosition, endPosition, Direction.VERTICAL, viewLookup);
+        return new WordData(word, startPosition, endPosition, Direction.VERTICAL);
     }
 
-    private WordData(@NonNull String word, @NonNull Coordinate startPosition, @NonNull Coordinate endPosition, @NonNull Direction direction, @NonNull ViewLookup viewLookup) {
+    private WordData(@NonNull String word, @NonNull Coordinate startPosition, @NonNull Coordinate endPosition, @NonNull Direction direction) {
         this.word = word;
         this.startPosition = startPosition;
         this.endPosition = endPosition;
         this.direction = direction;
-        this.viewLookup = viewLookup;
 
         boolean isHorizontal = direction == Direction.HORIZONTAL;
 
@@ -98,7 +98,7 @@ public class WordData {
             ItemData.ItemDataView view;
 
             try {
-                view = this.viewLookup.get(coordinate);
+                view = this.getViewLookup().get(coordinate);
             }
             catch (IllegalStateException e) {
                 return false;
@@ -115,7 +115,7 @@ public class WordData {
     public int flushIndex() {
         for (int i = 0; i < this.data.size(); i++) {
             ItemData data = this.data.get(i);
-            ItemData.ItemDataView view = this.viewLookup.get(data.getPosition());
+            ItemData.ItemDataView view = this.getViewLookup().get(data.getPosition());
 
             if (view.getText() == null) {
                 this.textIndex = i;
@@ -171,7 +171,7 @@ public class WordData {
 
     @NonNull
     private ItemData.ItemDataView getView(int index) {
-        return this.viewLookup.get(this.data.get(index).getPosition());
+        return this.getViewLookup().get(this.data.get(index).getPosition());
     }
 
     @Nullable
@@ -251,6 +251,10 @@ public class WordData {
         }
 
         return new SearchData(view, currentIndex);
+    }
+
+    private ViewLookup getViewLookup() {
+        return ViewLookup.get(LookupType.CROSSWORD);
     }
 
     private static class SearchData {

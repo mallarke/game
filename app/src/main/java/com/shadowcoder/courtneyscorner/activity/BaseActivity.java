@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
 import com.shadowcoder.courtneyscorner.Utils;
+import com.shadowcoder.courtneyscorner.notification.EventBus;
 
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
@@ -15,7 +16,10 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected Unbinder unbinder;
     protected abstract @LayoutRes Integer getLayoutId();
 
+    @SuppressWarnings("unused")
     protected final Utils utils = new Utils();
+
+    protected final EventBus eventBus = EventBus.getSingleton();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

@@ -11,6 +11,8 @@
     <style name="AppTheme.FullScreen" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowFullscreen">true</item>
+        <item name="android:configChanges">orientation</item>
+        <item name="android:screenOrientation">portrait</item>
     </style>
 
 </resources>

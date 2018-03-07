@@ -1,7 +1,9 @@
 package com.shadowcoder.courtneyscorner.activity.crossword;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.widget.Toast;
 
 import com.shadowcoder.courtneyscorner.R;
 import com.shadowcoder.courtneyscorner.activity.BaseActivity;
@@ -12,10 +14,13 @@ import com.shadowcoder.courtneyscorner.activity.crossword.view.CrosswordLayout;
 import com.shadowcoder.courtneyscorner.data.Coordinate;
 import com.shadowcoder.courtneyscorner.data.CrosswordData;
 import com.shadowcoder.courtneyscorner.data.MutableCoordinate;
-import com.shadowcoder.courtneyscorner.data.ViewLookup;
 import com.shadowcoder.courtneyscorner.data.WordData;
+import com.shadowcoder.courtneyscorner.generator.Result;
+import com.shadowcoder.courtneyscorner.generator.crossword.CrosswordGenerator;
+import com.shadowcoder.courtneyscorner.generator.service.Manager;
 import com.shadowcoder.courtneyscorner.view.Header;
 import com.shadowcoder.courtneyscorner.view.Keyboard;
+import com.squareup.otto.Subscribe;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,11 +38,13 @@ public class CrosswordActivity extends BaseActivity {
     @BindView(R.id.keyboard)
     Keyboard keyboard;
 
-    private CrosswordLookup viewLookup = new CrosswordLookup();
-    private Focus focus = new Focus(this.viewLookup);
+    private Focus focus = new Focus();
+    private ProgressDialog progressDialog;
 
     private CrosswordAdapter viewAdapter;
     private DataAdapter dataAdapter = new DataAdapter(this.focus);
+
+    private EventListener eventListener = new EventListener();
 
     @Override
     protected Integer getLayoutId() {
@@ -48,7 +55,7 @@ public class CrosswordActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        this.viewAdapter = new CrosswordAdapter(this.viewLookup);
+        this.viewAdapter = new CrosswordAdapter();
         this.viewAdapter.setOnItemClickListener(new MyItemClickListener());
 
         this.gridView.setOnViewLoadListener(new MyLoadListener());
@@ -66,9 +73,11 @@ public class CrosswordActivity extends BaseActivity {
             this.viewAdapter.registerViews();
         }
 
-        // move when async
-        CrosswordData data = this.buildData();
-        this.setData(data);
+        this.eventBus.register(this.eventListener);
+
+        if (!this.dataAdapter.hasData()) {
+            this.loadData();
+        }
     }
 
     @Override
@@ -78,16 +87,98 @@ public class CrosswordActivity extends BaseActivity {
         if (this.viewAdapter != null) {
             this.viewAdapter.unregisterViews();
         }
+
+        this.eventBus.unregister(this.eventListener);
+    }
+
+    private void loadData() {
+        Manager.getSingleton().schedule(new CrosswordGenerator());
+
+        if (this.progressDialog != null) {
+            return;
+        }
+
+        this.progressDialog = new ProgressDialog(this);
+        this.progressDialog.setMessage("Creating Crossword...");
+        this.progressDialog.setCancelable(false);
+        this.progressDialog.show();
     }
 
     private void setData(CrosswordData data) {
         // this has to be first or the focus won't work right
         this.dataAdapter.setCrosswordData(data);
         this.viewAdapter.setCrosswordData(data);
+
+        if (this.progressDialog != null) {
+            this.progressDialog.dismiss();
+            this.progressDialog = null;
+        }
+    }
+
+    private class MyItemClickListener implements CrosswordAdapter.OnItemClickListener {
+        @Override
+        public void onClick(@NonNull Coordinate coordinate) {
+            dataAdapter.move(coordinate);
+        }
+    }
+
+    private class MyHeaderTouchListener implements Header.OnHeaderTouchListener {
+        @Override
+        public void onLeft() {
+            dataAdapter.previous();
+        }
+
+        @Override
+        public void onRight() {
+            dataAdapter.next();
+        }
+
+        @Override
+        public void onFlipDirection() {
+            dataAdapter.flipDirection();
+        }
+    }
+
+    private class MyKeyboardClickListener implements Keyboard.OnKeyboardClickListener {
+        @Override
+        public void onClick(@NonNull String text) {
+            dataAdapter.add(text);
+        }
+
+        @Override
+        public void onBackspace() {
+            dataAdapter.delete();
+        }
+    }
+
+    private class MyLoadListener implements CrosswordLayout.OnViewLoadListener {
+        @Override
+        public void onStart() {
+            focus.lock();
+        }
+
+        @Override
+        public void onFinish() {
+            focus.unlock();
+        }
+    }
+
+    public class EventListener {
+
+        @Subscribe
+        @SuppressWarnings("unused")
+        public void handleDataCompiled(@NonNull Result<CrosswordData> result) {
+            if (result.successful) {
+                setData(result.result);
+            }
+            else {
+                Toast.makeText(CrosswordActivity.this, "Error while creating the crossword", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     private CrosswordData buildData() {
-        DataBuilder builder = new DataBuilder(this.viewLookup)
+        DataBuilder builder = new DataBuilder()
                 .addHorizontalData("abba")
                 .addHorizontalData("nab")
                 .addHorizontalData("opah")
@@ -150,76 +241,13 @@ public class CrosswordActivity extends BaseActivity {
         return builder.build();
     }
 
-    private class MyItemClickListener implements CrosswordAdapter.OnItemClickListener {
-        @Override
-        public void onClick(@NonNull Coordinate coordinate) {
-            dataAdapter.move(coordinate);
-        }
-    }
-
-    private class MyHeaderTouchListener implements Header.OnHeaderTouchListener {
-        @Override
-        public void onLeft() {
-            dataAdapter.previous();
-        }
-
-        @Override
-        public void onRight() {
-            dataAdapter.next();
-        }
-
-        @Override
-        public void onFlipDirection() {
-            dataAdapter.flipDirection();
-        }
-    }
-
-    private class MyKeyboardClickListener implements Keyboard.OnKeyboardClickListener {
-        @Override
-        public void onClick(@NonNull String text) {
-            dataAdapter.add(text);
-        }
-
-        @Override
-        public void onBackspace() {
-            dataAdapter.delete();
-        }
-    }
-
-    private class MyLoadListener implements CrosswordLayout.OnViewLoadListener {
-        @Override
-        public void onStart() {
-            focus.lock();
-        }
-
-        @Override
-        public void onFinish() {
-            focus.unlock();
-        }
-    }
-
-    private static class CrosswordLookup extends ViewLookup {
-        CrosswordLookup() {
-        }
-
-        @Override
-        protected int rowLength() {
-            return CrosswordLayout.CROSSWORD_LENGTH;
-        }
-    }
-
     private static class DataBuilder {
         private MutableCoordinate coordinateCache = new MutableCoordinate();
         private List<WordData> horizontalData = new ArrayList<>();
         private List<WordData> verticalData = new ArrayList<>();
-        private ViewLookup viewLookup;
-
-        DataBuilder(ViewLookup viewLookup) {
-            this.viewLookup = viewLookup;
-        }
 
         DataBuilder addHorizontalData(@NonNull String word) {
-            WordData data = WordData.horizontalData(word, this.coordinateCache.copy(), this.viewLookup);
+            WordData data = WordData.horizontalData(word, this.coordinateCache.copy());
             this.coordinateCache.set(data.getEndPosition());
             this.coordinateCache.x += 2;
 
@@ -228,7 +256,7 @@ public class CrosswordActivity extends BaseActivity {
         }
 
         DataBuilder addVerticalData(@NonNull String word) {
-            WordData data = WordData.verticalData(word, this.coordinateCache.copy(), this.viewLookup);
+            WordData data = WordData.verticalData(word, this.coordinateCache.copy());
             this.coordinateCache.set(data.getEndPosition());
             this.coordinateCache.y += 2;
 

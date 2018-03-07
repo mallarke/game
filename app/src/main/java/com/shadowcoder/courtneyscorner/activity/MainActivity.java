@@ -10,8 +10,14 @@ import butterknife.OnClick;
 
 public class MainActivity extends BaseActivity {
 
-    @OnClick(R.id.main_button)
-    void onButtonClick() {
+    @OnClick(R.id.generator_button)
+    void onGeneratorButtonClick() {
+        Intent intent = new Intent(this, GeneratorActivity.class);
+        this.startActivity(intent);
+    }
+
+    @OnClick(R.id.crossword_button)
+    void onCrosswordButtonClick() {
         Intent intent = new Intent(this, CrosswordActivity.class);
         this.startActivity(intent);
     }

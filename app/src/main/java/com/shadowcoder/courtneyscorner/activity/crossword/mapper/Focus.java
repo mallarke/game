@@ -6,7 +6,8 @@ import android.util.Log;
 import com.shadowcoder.courtneyscorner.data.Coordinate;
 import com.shadowcoder.courtneyscorner.data.ItemData;
 import com.shadowcoder.courtneyscorner.data.MutableCoordinate;
-import com.shadowcoder.courtneyscorner.data.ViewLookup;
+import com.shadowcoder.courtneyscorner.lookup.LookupType;
+import com.shadowcoder.courtneyscorner.lookup.ViewLookup;
 import com.shadowcoder.courtneyscorner.data.WordData;
 
 import java.util.ArrayList;
@@ -19,20 +20,10 @@ public class Focus {
 
     private static final String TAG = Focus.class.getSimpleName();
 
-    private final ViewLookup viewLookup;
-
     private List<Coordinate> coordinates = new ArrayList<>();
     private MutableCoordinate focus = new MutableCoordinate();
 
     private boolean locked;
-
-    /*
-     * CONSTRUCTOR METHODS
-     */
-
-    public Focus(ViewLookup viewLookup) {
-        this.viewLookup = viewLookup;
-    }
 
     /*
      * PUBLIC METHODS
@@ -45,7 +36,7 @@ public class Focus {
     public void reset() {
         for (Coordinate coordinate : this.coordinates) {
             try {
-                ItemData.ItemDataView view = this.viewLookup.get(coordinate);
+                ItemData.ItemDataView view = this.getViewLookup().get(coordinate);
                 view.setFocus(false);
                 view.setHighlight(false);
             }
@@ -80,7 +71,7 @@ public class Focus {
     private void update() {
         for (Coordinate coordinate : this.coordinates) {
             try {
-                ItemData.ItemDataView view = this.viewLookup.get(coordinate);
+                ItemData.ItemDataView view = this.getViewLookup().get(coordinate);
                 view.setFocus(this.focus.equalsCoordinate(coordinate));
                 view.setHighlight(true);
             }
@@ -103,5 +94,13 @@ public class Focus {
     public void unlock() {
         this.locked = false;
         this.update();
+    }
+
+    /*
+     * PRIVATE METHODS
+     */
+
+    private ViewLookup getViewLookup() {
+        return ViewLookup.get(LookupType.CROSSWORD);
     }
 }

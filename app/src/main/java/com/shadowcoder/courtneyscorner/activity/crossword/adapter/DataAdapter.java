@@ -63,6 +63,13 @@ public class DataAdapter {
     }
 
     /**
+     * Determines if the adapter has data
+     */
+    public boolean hasData() {
+        return (this.crosswordData != null);
+    }
+
+    /**
      * Getter for the current {@link WordData} in the input focus
      *
      * @return the current {@link WordData}

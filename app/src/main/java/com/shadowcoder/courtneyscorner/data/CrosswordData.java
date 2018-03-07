@@ -16,6 +16,10 @@ public class CrosswordData {
         this.verticalCache.add(verticalData);
     }
 
+    public boolean hasData() {
+        return (this.horizontalCache.size() > 0 && this.verticalCache.size() > 0);
+    }
+
     @NonNull
     public List<WordData> getHorizontalWords() {
         return this.horizontalCache.dataLookup;
@@ -33,7 +37,6 @@ public class CrosswordData {
 
     public class DataCache {
 
-        private Coordinate[] bob = new Coordinate[13];
         private HashMap<Coordinate, LookupValue> coordinateLookup = new HashMap<>();
         private List<WordData> dataLookup = new ArrayList<>();
 

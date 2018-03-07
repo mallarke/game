@@ -1,16 +1,37 @@
-package com.shadowcoder.courtneyscorner.data;
+package com.shadowcoder.courtneyscorner.lookup;
 
 import android.support.annotation.NonNull;
 
+import com.shadowcoder.courtneyscorner.data.Coordinate;
+import com.shadowcoder.courtneyscorner.data.ItemData;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public abstract class ViewLookup {
 
+    private static Map<LookupType, ViewLookup> registry = new HashMap<>();
     private List<ItemData.ItemDataView> lookup = new ArrayList<>();
 
-    protected ViewLookup() {
+    public static ViewLookup get(@NonNull LookupType type) {
+        ViewLookup lookup = registry.get(type);
+        if (lookup == null) {
+            lookup = type.get();
+            registry.put(type, lookup);
+        }
 
+        return lookup;
+    }
+
+    ViewLookup(@NonNull LookupType type) {
+        ViewLookup test = registry.get(type);
+        if (test != null) {
+            throw new IllegalStateException(String.format("already registered lookup for type: %s", type.toString()));
+        }
+
+        registry.put(type, this);
     }
 
     protected abstract int rowLength();

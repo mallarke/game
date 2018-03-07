@@ -9,7 +9,8 @@ import android.widget.BaseAdapter;
 import com.shadowcoder.courtneyscorner.data.Coordinate;
 import com.shadowcoder.courtneyscorner.data.CrosswordData;
 import com.shadowcoder.courtneyscorner.data.ItemData;
-import com.shadowcoder.courtneyscorner.data.ViewLookup;
+import com.shadowcoder.courtneyscorner.lookup.LookupType;
+import com.shadowcoder.courtneyscorner.lookup.ViewLookup;
 import com.shadowcoder.courtneyscorner.notification.EventBus;
 import com.shadowcoder.courtneyscorner.activity.crossword.view.CrosswordItemView;
 
@@ -27,15 +28,13 @@ public class CrosswordAdapter extends BaseAdapter {
 
     private @NonNull List<ItemData> data = new ArrayList<>();
 
-    private final ViewLookup viewLookup;
-
     private ArrayList<CrosswordItemView> views = new ArrayList<>();
     private MyItemClickListener itemClickListener = new MyItemClickListener();
     private OnItemClickListener externalItemClickListener;
 
-    public CrosswordAdapter(@NonNull ViewLookup viewLookup) {
-        this.viewLookup = viewLookup;
-    }
+    /*
+     * GETTER/SETTER METHODS
+     */
 
     /**
      * Setter for the {@link CrosswordData}.  This clears the previous view state.
@@ -83,7 +82,7 @@ public class CrosswordAdapter extends BaseAdapter {
         view.setData(data);
 
         this.views.add(view);
-        this.viewLookup.register(position, view);
+        this.getViewLookup().register(position, view);
 
         return view;
     }
@@ -92,6 +91,10 @@ public class CrosswordAdapter extends BaseAdapter {
         this.externalItemClickListener = listener;
     }
 
+    /*
+     * PUBLIC METHODS
+     */
+
     /**
      * Register the adapter views with the {@link EventBus} and the {@link ViewLookup}
      */
@@ -99,7 +102,7 @@ public class CrosswordAdapter extends BaseAdapter {
         for (int i = 0; i < this.views.size(); i++) {
             CrosswordItemView view = this.views.get(i);
             EventBus.getSingleton().register(view);
-            this.viewLookup.register(i, view);
+            this.getViewLookup().register(i, view);
         }
     }
 
@@ -111,7 +114,15 @@ public class CrosswordAdapter extends BaseAdapter {
             EventBus.getSingleton().unregister(view);
         }
 
-        this.viewLookup.clear();
+        this.getViewLookup().clear();
+    }
+
+    /*
+     * PRIVATE METHODS
+     */
+
+    private ViewLookup getViewLookup() {
+        return ViewLookup.get(LookupType.CROSSWORD);
     }
 
     private class MyItemClickListener implements View.OnClickListener {

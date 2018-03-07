@@ -59,6 +59,7 @@ public class CrosswordItemView extends FrameLayout implements ItemData.ItemDataV
         this.value.setText(null);
         this.updateState();
         this.invalidate();
+        this.value.setText(data.getText());
     }
 
     @Nullable
