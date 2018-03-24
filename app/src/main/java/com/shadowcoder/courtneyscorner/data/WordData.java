@@ -12,40 +12,26 @@ import java.util.List;
 public class WordData {
 
     private final @NonNull String word;
-    private final @NonNull Coordinate startPosition;
-    private final @NonNull Coordinate endPosition;
-    private final @NonNull Direction direction;
+    private final @NonNull CoordinateRange position;
 
     private final @NonNull ArrayList<ItemData> data;
 
     private int textIndex = 0;
 
-    public static @NonNull WordData horizontalData(@NonNull String word, @NonNull Coordinate startPosition) {
-        Coordinate endPosition = new Coordinate((startPosition.x + word.length() - 1), startPosition.y);
-        return new WordData(word, startPosition, endPosition, Direction.HORIZONTAL);
-    }
-
-    public static @NonNull WordData verticalData(@NonNull String word, @NonNull Coordinate startPosition) {
-        Coordinate endPosition = new Coordinate(startPosition.x, startPosition.y + (word.length() - 1));
-        return new WordData(word, startPosition, endPosition, Direction.VERTICAL);
-    }
-
-    private WordData(@NonNull String word, @NonNull Coordinate startPosition, @NonNull Coordinate endPosition, @NonNull Direction direction) {
+    public WordData(@NonNull String word, @NonNull CoordinateRange position) {
         this.word = word;
-        this.startPosition = startPosition;
-        this.endPosition = endPosition;
-        this.direction = direction;
+        this.position = position;
 
-        boolean isHorizontal = direction == Direction.HORIZONTAL;
+        boolean isHorizontal = position.direction == Direction.HORIZONTAL;
 
-        int start = (isHorizontal ? startPosition.x : startPosition.y);
-        int end =  (isHorizontal ? endPosition.x : endPosition.y) + 1;
+        int start = (isHorizontal ? position.start.x : position.start.y);
+        int end =  (isHorizontal ? position.end.x : position.end.y) + 1;
 
         ArrayList<ItemData> array = new ArrayList<>();
 
         for (int i = start, index = 0; i < end; i++, index++) {
-            int x = (isHorizontal ? i : startPosition.x);
-            int y = (isHorizontal ? startPosition.y : i);
+            int x = (isHorizontal ? i : position.start.x);
+            int y = (isHorizontal ? position.start.y : i);
 
             String letter = Character.toString(word.charAt(index));
             Integer startingIndex = (i == start ? start : null);
@@ -74,23 +60,23 @@ public class WordData {
 
     @NonNull
     Direction getDirection() {
-        return this.direction;
+        return this.position.direction;
     }
 
     @NonNull
     @SuppressWarnings({"unused", "WeakerAccess"})
     public Coordinate getStartPosition() {
-        return startPosition;
+        return position.start;
     }
 
     @NonNull
     public Coordinate getEndPosition() {
-        return endPosition;
+        return position.end;
     }
 
     @NonNull
     public List<Coordinate> getPositions() {
-        return this.startPosition.inflateTo(this.endPosition, this.direction);
+        return this.position.inflate();
     }
 
     public boolean completed() {

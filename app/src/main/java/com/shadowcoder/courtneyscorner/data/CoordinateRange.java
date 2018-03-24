@@ -14,12 +14,16 @@ public class CoordinateRange {
     @SerializedName("end")
     public final Coordinate end;
 
-    public CoordinateRange(@NonNull Coordinate start, @NonNull Coordinate end) {
+    @SerializedName("direction")
+    public final Direction direction;
+
+    public CoordinateRange(@NonNull Coordinate start, @NonNull Coordinate end, @NonNull Direction direction) {
         this.start = start;
         this.end = end;
+        this.direction = direction;
     }
 
-    public List<Coordinate> inflate(@NonNull Direction direction) {
-        return this.start.inflateTo(this.end, direction);
+    public List<Coordinate> inflate() {
+        return this.start.inflateTo(this.end, this.direction);
     }
 }

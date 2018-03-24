@@ -7,6 +7,7 @@ import android.util.SparseArray;
 import com.shadowcoder.courtneyscorner.Utils;
 import com.shadowcoder.courtneyscorner.activity.crossword.view.CrosswordLayout;
 import com.shadowcoder.courtneyscorner.data.Coordinate;
+import com.shadowcoder.courtneyscorner.data.CoordinateRange;
 import com.shadowcoder.courtneyscorner.data.CrosswordData;
 import com.shadowcoder.courtneyscorner.data.Direction;
 import com.shadowcoder.courtneyscorner.data.WordData;
@@ -32,51 +33,11 @@ public class CrosswordGenerator extends Generator<CrosswordData> {
                 "falling", "not", "end", "start", "middle", "center", "left", "right", "top", "bottom", "up",
                 "down", "circle", "square", "triangle", "angel", "demon", "puppy", "kitty", "dog", "cat", "over",
                 "under", "need", "advisory", "crossword", "coordinate", "cache", "notfalling", "collection", "rhombus",
-                "australia", "germany", "shadow"
+                "australia", "germany", "shadow", "she", "hit", "courtney", "stomach", "punch",
+                "baseballbat", "years", "mellow", "feet", "tires", "car", "corner", "foot", "watch"
         };
 
         TEST_STRINGS.addAll(Arrays.asList(test_values));
-
-        List<Coordinate> c1 = new ArrayList<>();
-        c1.add(new Coordinate(1, 0));
-        c1.add(new Coordinate(4, 0));
-        c1.add(new Coordinate(6, 0));
-
-        c1.add(new Coordinate(2, 3));
-        c1.add(new Coordinate(11, 3));
-
-        c1.add(new Coordinate(2, 4));
-        c1.add(new Coordinate(8, 4));
-        c1.add(new Coordinate(11, 4));
-
-        c1.add(new Coordinate(0, 5));
-        c1.add(new Coordinate(3, 5));
-        c1.add(new Coordinate(4, 5));
-        c1.add(new Coordinate(5, 5));
-        c1.add(new Coordinate(6, 5));
-        c1.add(new Coordinate(7, 5));
-        c1.add(new Coordinate(8, 5));
-        c1.add(new Coordinate(9, 5));
-
-        c1.add(new Coordinate(2, 6));
-        c1.add(new Coordinate(8, 6));
-        c1.add(new Coordinate(9, 6));
-        c1.add(new Coordinate(10, 6));
-
-        c1.add(new Coordinate(3, 7));
-        c1.add(new Coordinate(8, 7));
-
-        c1.add(new Coordinate(1, 8));
-        c1.add(new Coordinate(8, 8));
-        c1.add(new Coordinate(10, 8));
-        c1.add(new Coordinate(12, 8));
-
-        c1.add(new Coordinate(2, 10));
-        c1.add(new Coordinate(3, 10));
-        c1.add(new Coordinate(10, 10));
-        c1.add(new Coordinate(11, 10));
-
-//        BOARD_CONFIGURATIONS.add(c1);
     }
 
     private static final int SIZE = CrosswordLayout.CROSSWORD_LENGTH;
@@ -87,35 +48,31 @@ public class CrosswordGenerator extends Generator<CrosswordData> {
         SparseArray<List<Integer>> lookup = this.buildLookup(result);
         List<BoardConfiguration> configurations = Utils.readBoardConfigs();
 
-        CrosswordData data = null;
-
         for (int max_try = 0; max_try < 20; max_try++) {
-            data = this.generate(result, lookup, configurations);
+            CrosswordData data = this.generate(result, lookup, configurations);
             if (data != null) {
-                break;
+                return data;
             }
         }
 
-        return (data != null && data.hasData() ? data : null);
+        return null;
     }
 
     @Nullable
     private CrosswordData generate(Result result, SparseArray<List<Integer>> numberLookup, List<BoardConfiguration> configurations) {
         Location[][] board = new Location[SIZE][SIZE];
-        BoardConfiguration configuration = this.saltBoard(board, configurations);
+        BoardConfiguration configuration = this.initializeBoard(board, configurations);
 
-        for (int maxTries = 0; maxTries < 10000; maxTries++) {
+//        for (int maxTries = 0; maxTries < 10000; maxTries++) {
+//
+//        }
 
-        }
-
-        return this.compile(board);
+        return this.compile(board, configuration);
     }
 
     @NonNull
-    private BoardConfiguration saltBoard(Location[][] board, List<BoardConfiguration> configurations) {
-        Random random = new Random();
-
-        int saltIndex = random.nextInt(configurations.size());
+    private BoardConfiguration initializeBoard(Location[][] board, List<BoardConfiguration> configurations) {
+        int saltIndex = new Random().nextInt(configurations.size());
         BoardConfiguration configuration = configurations.get(saltIndex);
 
         for (int x = 0, y = 0; x < SIZE; x += (y == SIZE - 1 ? 1 : 0), y = (y == SIZE - 1 ? 0 : y + 1)) {
@@ -125,7 +82,15 @@ public class CrosswordGenerator extends Generator<CrosswordData> {
             }
 
             board[x][y] = new Location();
-            board[x][y].set((int) 'a');
+            board[x][y].letter = "a";
+        }
+
+        // salt the board
+        for (int i = 0; i < new Random().nextInt(3) + 1; i++) {
+            String text = TEST_STRINGS.get(new Random().nextInt(TEST_STRINGS.size()));
+
+            int x = new Random().nextInt(SIZE);
+            int y = new Random().nextInt(SIZE);
         }
 
         return configuration;
@@ -223,13 +188,13 @@ public class CrosswordGenerator extends Generator<CrosswordData> {
     }
 
     @Nullable
-    private CrosswordData compile(Location[][] board) {
-        if (!this.isBoardCompleted(board)) {
-            return null;
-        }
+    private CrosswordData compile(Location[][] board, BoardConfiguration configuration) {
+//        if (!this.isBoardCompleted(board)) {
+//            return null;
+//        }
 
-        List<WordData> horizontalData = this.getHorizontalData(board);
-        List<WordData> verticalData = this.getVerticalData(board);
+        List<WordData> horizontalData = this.getHorizontalData(board, configuration);
+        List<WordData> verticalData = this.getVerticalData(board, configuration);
 
         return new CrosswordData(horizontalData, verticalData);
     }
@@ -245,60 +210,47 @@ public class CrosswordGenerator extends Generator<CrosswordData> {
         return true;
     }
 
-    private List<WordData> getHorizontalData(Location[][] board) {
+    private List<WordData> getHorizontalData(Location[][] board, BoardConfiguration configuration) {
         List<WordData> horizontalData = new ArrayList<>();
-        Compiler compiler = new Compiler();
 
-        for (int x = 0, y = 0; y < SIZE; y += (x == SIZE - 1 ? 1 : 0), x = (x == SIZE - 1 ? 0 : x + 1)) {
-            Location location = board[x][y];
-            if (location != null) {
-                if (!compiler.running) {
-                    compiler.start(new Coordinate(x, y));
-                }
+        for (CoordinateRange range : configuration.horizontalRanges) {
+            List<Coordinate> coordinates = range.inflate();
+            Compiler compiler = new Compiler(coordinates.size());
 
+            for (Coordinate coordinate : coordinates) {
+                Location location = board[coordinate.x][coordinate.y];
                 compiler.add(location.letter);
             }
 
-            if (location == null || x == SIZE - 1) {
-                compiler.stop();
-            }
-
-            if ((!compiler.running || y == SIZE - 1) && compiler.hasText()) {
-                WordData data = WordData.horizontalData(compiler.text, compiler.startPosition);
-                horizontalData.add(data);
-
-                compiler.reset();
-            }
+            horizontalData.add(new WordData(compiler.toString(), range));
         }
 
+        horizontalData.clear();
         return horizontalData;
     }
 
-    private List<WordData> getVerticalData(Location[][] board) {
+    private List<WordData> getVerticalData(Location[][] board, BoardConfiguration configuration) {
         List<WordData> verticalData = new ArrayList<>();
-        Compiler compiler = new Compiler();
 
-        for (int x = 0, y = 0; x < SIZE; x += (y == SIZE - 1 ? 1 : 0), y = (y == SIZE - 1 ? 0 : y + 1)) {
+        for (int x = 0, y = 0; x < SIZE; y += (x == SIZE - 1 ? 1 : 0), x = (x == SIZE - 1 ? 0 : x + 1)) {
             Location location = board[x][y];
             if (location != null) {
-                if (!compiler.running) {
-                    compiler.start(new Coordinate(x, y));
-                }
-
-                compiler.add(location.letter);
-            }
-
-            if (location == null || y == SIZE - 1) {
-                compiler.stop();
-            }
-
-            if ((!compiler.running || y == SIZE - 1) && compiler.hasText()) {
-                WordData data = WordData.verticalData(compiler.text, compiler.startPosition);
-                verticalData.add(data);
-
-                compiler.reset();
+                CoordinateRange range = new CoordinateRange(new Coordinate(x, y), new Coordinate(x, y), Direction.VERTICAL);
+                verticalData.add(new WordData(Integer.toHexString(y), range));
             }
         }
+
+//        for (CoordinateRange range : configuration.verticalRanges) {
+//            List<Coordinate> coordinates = range.inflate();
+//            Compiler compiler = new Compiler(coordinates.size());
+//
+//            for (Coordinate coordinate : coordinates) {
+//                Location location = board[coordinate.x][coordinate.y];
+//                compiler.add(location.letter);
+//            }
+//
+//            verticalData.add(new WordData(compiler.toString(), range));
+//        }
 
         return verticalData;
     }
@@ -333,33 +285,20 @@ public class CrosswordGenerator extends Generator<CrosswordData> {
 
     private static class Compiler {
 
-        private boolean running;
-        private Coordinate startPosition;
-        private String text = "";
+        private String data;
+        private final StringBuilder builder;
 
-        private void start(Coordinate coordinate) {
-            this.running = true;
-            this.startPosition = coordinate;
-            this.text = "";
+        private Compiler(int wordSize) {
+            this.builder = new StringBuilder(wordSize);
         }
 
-        private void stop() {
-            this.running = false;
+        private void add(String letter) {
+            this.builder.append(letter);
         }
 
-        private void add(String text) {
-            if (this.running) {
-                this.text += text;
-            }
-        }
-
-        private boolean hasText() {
-            return (this.text.length() > 0 && this.startPosition != null);
-        }
-
-        private void reset() {
-            this.startPosition = null;
-            this.text = "";
+        @Override
+        public String toString() {
+            return this.builder.toString();
         }
     }
 }

@@ -12,7 +12,9 @@ import com.shadowcoder.courtneyscorner.activity.crossword.adapter.DataAdapter;
 import com.shadowcoder.courtneyscorner.activity.crossword.mapper.Focus;
 import com.shadowcoder.courtneyscorner.activity.crossword.view.CrosswordLayout;
 import com.shadowcoder.courtneyscorner.data.Coordinate;
+import com.shadowcoder.courtneyscorner.data.CoordinateRange;
 import com.shadowcoder.courtneyscorner.data.CrosswordData;
+import com.shadowcoder.courtneyscorner.data.Direction;
 import com.shadowcoder.courtneyscorner.data.MutableCoordinate;
 import com.shadowcoder.courtneyscorner.data.WordData;
 import com.shadowcoder.courtneyscorner.generator.Result;
@@ -247,7 +249,11 @@ public class CrosswordActivity extends BaseActivity {
         private List<WordData> verticalData = new ArrayList<>();
 
         DataBuilder addHorizontalData(@NonNull String word) {
-            WordData data = WordData.horizontalData(word, this.coordinateCache.copy());
+            MutableCoordinate end = new MutableCoordinate(this.coordinateCache);
+            end.x += word.length();
+
+            CoordinateRange range = new CoordinateRange(this.coordinateCache.copy(), end.copy(), Direction.HORIZONTAL);
+            WordData data = new WordData(word, range);
             this.coordinateCache.set(data.getEndPosition());
             this.coordinateCache.x += 2;
 
@@ -256,7 +262,11 @@ public class CrosswordActivity extends BaseActivity {
         }
 
         DataBuilder addVerticalData(@NonNull String word) {
-            WordData data = WordData.verticalData(word, this.coordinateCache.copy());
+            MutableCoordinate end = new MutableCoordinate(this.coordinateCache);
+            end.y += word.length();
+
+            CoordinateRange range = new CoordinateRange(this.coordinateCache.copy(), end.copy(), Direction.HORIZONTAL);
+            WordData data = new WordData(word, range);
             this.coordinateCache.set(data.getEndPosition());
             this.coordinateCache.y += 2;
 

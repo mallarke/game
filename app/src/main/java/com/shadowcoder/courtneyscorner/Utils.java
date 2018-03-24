@@ -55,7 +55,6 @@ public class Utils {
 
             Gson gson = new Gson();
             Type type = new TypeToken<List<BoardConfiguration>>() {}.getType();
-
             configs = gson.fromJson(contents.toString(), type);
         }
         catch (IOException e) {

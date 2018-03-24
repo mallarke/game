@@ -89,13 +89,17 @@ public class Coordinate {
         List<Coordinate> items = new ArrayList<>();
 
         if (direction == Direction.HORIZONTAL) {
-            for (int i = this.x; i <= other.x; i++) {
+            items.add(new Coordinate(this.x, this.y));
+
+            for (int i = this.x + 1; i <= other.x; i++) {
                 items.add(new Coordinate(i, this.y));
             }
         }
 
         if (direction == Direction.VERTICAL) {
-            for (int i = this.y; i <= other.y; i++) {
+            items.add(new Coordinate(this.x, this.y));
+
+            for (int i = this.y + 1; i <= other.y; i++) {
                 items.add(new Coordinate(this.x, i));
             }
         }
